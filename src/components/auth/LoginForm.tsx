@@ -1,149 +1,205 @@
 
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BookOpen, GraduationCap } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { GraduationCap } from 'lucide-react';
 
-interface LoginFormProps {
-  onLogin: (userData: any) => void;
-}
+const LoginForm = () => {
+  const { signIn, signUp } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
 
-const LoginForm = ({ onLogin }: LoginFormProps) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState<string>('');
+  const [loginData, setLoginData] = useState({
+    email: '',
+    password: '',
+  });
 
-  // Demo users for different roles
-  const demoUsers = {
-    student: { id: '1', name: 'John Smith', email: 'john@student.edu', role: 'student' as const },
-    teacher: { id: '2', name: 'Dr. Sarah Johnson', email: 'sarah@teacher.edu', role: 'teacher' as const },
-    academic_staff: { id: '3', name: 'Prof. Michael Brown', email: 'michael@academic.edu', role: 'academic_staff' as const },
-    admin: { id: '4', name: 'Admin User', email: 'admin@lms.edu', role: 'admin' as const }
-  };
+  const [signupData, setSignupData] = useState({
+    email: '',
+    password: '',
+    full_name: '',
+    role: 'student' as 'student' | 'teacher' | 'academic_staff' | 'admin',
+    student_id: '',
+    employee_id: '',
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (role && demoUsers[role as keyof typeof demoUsers]) {
-      onLogin(demoUsers[role as keyof typeof demoUsers]);
+    setLoading(true);
+
+    try {
+      await signIn(loginData.email, loginData.password);
+      toast({
+        title: "Success",
+        description: "Logged in successfully!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to login",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDemoLogin = (userRole: keyof typeof demoUsers) => {
-    onLogin(demoUsers[userRole]);
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await signUp(signupData.email, signupData.password, {
+        full_name: signupData.full_name,
+        role: signupData.role,
+        student_id: signupData.role === 'student' ? signupData.student_id : null,
+        employee_id: signupData.role !== 'student' ? signupData.employee_id : null,
+      });
+      
+      toast({
+        title: "Success",
+        description: "Account created successfully! Please check your email to verify your account.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create account",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <div className="flex justify-center items-center space-x-2 mb-4">
-            <GraduationCap className="h-10 w-10 text-blue-600" />
-            <BookOpen className="h-8 w-8 text-indigo-600" />
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <GraduationCap className="h-12 w-12 text-blue-600" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">EduPlatform LMS</h1>
-          <p className="text-gray-600 mt-2">Learning Management System</p>
-        </div>
-
-        {/* Login Card */}
-        <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl font-semibold text-gray-800">Sign In</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="h-11"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="h-11"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Select Role</Label>
-                <Select value={role} onValueChange={setRole}>
-                  <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Choose your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="student">Student</SelectItem>
-                    <SelectItem value="teacher">Teacher</SelectItem>
-                    <SelectItem value="academic_staff">Academic Staff</SelectItem>
-                    <SelectItem value="admin">Administrator</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                disabled={!role}
-              >
-                Sign In
-              </Button>
-            </form>
-
-            {/* Demo Login Buttons */}
-            <div className="pt-4 border-t">
-              <p className="text-sm text-gray-600 text-center mb-3">Quick Demo Access:</p>
-              <div className="grid grid-cols-2 gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleDemoLogin('student')}
-                  className="text-xs"
-                >
-                  Student Demo
+          <CardTitle className="text-2xl">Learning Management System</CardTitle>
+          <CardDescription>Sign in to access your account</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login">
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={loginData.email}
+                    onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={loginData.password}
+                    onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Signing in..." : "Sign In"}
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleDemoLogin('teacher')}
-                  className="text-xs"
-                >
-                  Teacher Demo
+              </form>
+            </TabsContent>
+            
+            <TabsContent value="signup">
+              <form onSubmit={handleSignup} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">Full Name</Label>
+                  <Input
+                    id="signup-name"
+                    value={signupData.full_name}
+                    onChange={(e) => setSignupData({ ...signupData, full_name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    value={signupData.email}
+                    onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Password</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    value={signupData.password}
+                    onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role</Label>
+                  <Select
+                    value={signupData.role}
+                    onValueChange={(value: 'student' | 'teacher' | 'academic_staff' | 'admin') =>
+                      setSignupData({ ...signupData, role: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="teacher">Teacher</SelectItem>
+                      <SelectItem value="academic_staff">Academic Staff</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {signupData.role === 'student' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="student-id">Student ID</Label>
+                    <Input
+                      id="student-id"
+                      value={signupData.student_id}
+                      onChange={(e) => setSignupData({ ...signupData, student_id: e.target.value })}
+                    />
+                  </div>
+                )}
+                {signupData.role !== 'student' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="employee-id">Employee ID</Label>
+                    <Input
+                      id="employee-id"
+                      value={signupData.employee_id}
+                      onChange={(e) => setSignupData({ ...signupData, employee_id: e.target.value })}
+                    />
+                  </div>
+                )}
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Creating account..." : "Create Account"}
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleDemoLogin('academic_staff')}
-                  className="text-xs"
-                >
-                  Academic Staff
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleDemoLogin('admin')}
-                  className="text-xs"
-                >
-                  Admin Demo
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 };
