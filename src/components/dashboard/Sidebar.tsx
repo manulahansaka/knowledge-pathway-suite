@@ -18,11 +18,12 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
+import type { Database } from '@/integrations/supabase/types';
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 interface SidebarProps {
-  user: {
-    role: 'student' | 'teacher' | 'academic_staff' | 'admin';
-  };
+  user: Profile;
   isOpen: boolean;
   onToggle: () => void;
 }
@@ -98,20 +99,28 @@ const Sidebar = ({ user, isOpen, onToggle }: SidebarProps) => {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 transition-all duration-300 z-30 ${
+      <aside className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 transition-all duration-300 z-30 ${
         isOpen ? 'w-64' : 'w-16'
       } hidden lg:block`}>
         
-        {/* Toggle Button */}
-        <div className="absolute -right-3 top-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onToggle}
-            className="h-6 w-6 rounded-full p-0 border-2 bg-white"
-          >
-            {isOpen ? <ChevronLeft className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-          </Button>
+        {/* Header */}
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            {isOpen && (
+              <div>
+                <h2 className="text-lg font-semibold text-gray-800">LMS</h2>
+                <p className="text-sm text-gray-600">{user.full_name}</p>
+              </div>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onToggle}
+              className="h-8 w-8 rounded-full p-0 border-2 bg-white"
+            >
+              {isOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
 
         {/* Navigation */}
@@ -145,9 +154,17 @@ const Sidebar = ({ user, isOpen, onToggle }: SidebarProps) => {
       )}
 
       {/* Mobile Sidebar */}
-      <aside className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 z-50 lg:hidden ${
+      <aside className={`fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 z-50 lg:hidden ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
+        {/* Header */}
+        <div className="p-4 border-b border-gray-200">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800">LMS</h2>
+            <p className="text-sm text-gray-600">{user.full_name}</p>
+          </div>
+        </div>
+        
         <nav className="p-4 space-y-2 overflow-y-auto h-full">
           {navigationItems.map((item) => {
             const Icon = item.icon;

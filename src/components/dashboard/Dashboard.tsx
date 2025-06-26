@@ -17,6 +17,7 @@ interface DashboardProps {
 const Dashboard = ({ user }: DashboardProps) => {
   const { signOut } = useAuth();
   const [activeSection, setActiveSection] = useState('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -29,15 +30,15 @@ const Dashboard = ({ user }: DashboardProps) => {
   const renderDashboard = () => {
     switch (user.role) {
       case 'student':
-        return <StudentDashboard user={user} activeSection={activeSection} />;
+        return <StudentDashboard user={user} />;
       case 'teacher':
-        return <TeacherDashboard user={user} activeSection={activeSection} />;
+        return <TeacherDashboard user={user} />;
       case 'admin':
-        return <AdminDashboard user={user} activeSection={activeSection} />;
+        return <AdminDashboard user={user} />;
       case 'academic_staff':
-        return <AcademicStaffDashboard user={user} activeSection={activeSection} />;
+        return <AcademicStaffDashboard user={user} />;
       default:
-        return <StudentDashboard user={user} activeSection={activeSection} />;
+        return <StudentDashboard user={user} />;
     }
   };
 
@@ -45,9 +46,8 @@ const Dashboard = ({ user }: DashboardProps) => {
     <div className="flex h-screen bg-gray-100">
       <Sidebar
         user={user}
-        activeSection={activeSection}
-        setActiveSection={setActiveSection}
-        onLogout={handleLogout}
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
       <main className="flex-1 overflow-auto">
         {renderDashboard()}

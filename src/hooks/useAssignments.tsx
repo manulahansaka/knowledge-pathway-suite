@@ -28,19 +28,35 @@ export function useStudentAssignments(studentId: string) {
   return useQuery({
     queryKey: ['student-assignments', studentId],
     queryFn: async () => {
+      // First get the courses the student is enrolled in
+      const { data: enrollments, error: enrollmentError } = await supabase
+        .from('enrollments')
+        .select('course_id')
+        .eq('student_id', studentId)
+        .eq('is_active', true);
+
+      if (enrollmentError) throw enrollmentError;
+
+      if (!enrollments || enrollments.length === 0) {
+        return [];
+      }
+
+      const courseIds = enrollments.map(e => e.course_id);
+
+      // Then get assignments for those courses
       const { data, error } = await supabase
         .from('assignments')
         .select(`
           *,
-          course:courses(name, code),
-          submission:assignment_submissions!left(
+          courses!inner(name, code),
+          assignment_submissions!left(
             id,
             status,
             points_earned,
             submitted_at
           )
         `)
-        .eq('course_id', 'IN', `(SELECT course_id FROM enrollments WHERE student_id = '${studentId}' AND is_active = true)`)
+        .in('course_id', courseIds)
         .eq('is_active', true)
         .order('due_date');
 
