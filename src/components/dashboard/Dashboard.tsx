@@ -16,7 +16,6 @@ interface DashboardProps {
 
 const Dashboard = ({ user }: DashboardProps) => {
   const { signOut } = useAuth();
-  const [activeSection, setActiveSection] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {

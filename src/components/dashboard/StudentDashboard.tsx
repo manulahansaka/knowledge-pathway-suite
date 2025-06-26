@@ -158,12 +158,12 @@ const StudentDashboard = ({ user }: StudentDashboardProps) => {
                   <div key={enrollment.id} className="border rounded-lg p-3">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="font-medium">{enrollment.courses?.name}</h4>
+                        <h4 className="font-medium">{enrollment.course?.name}</h4>
                         <p className="text-sm text-gray-600">
-                          {enrollment.courses?.code} • {enrollment.courses?.credits} credits
+                          {enrollment.course?.code} • {enrollment.course?.credits} credits
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
-                          Instructor: {enrollment.courses?.profiles?.full_name || 'TBA'}
+                          Instructor: {enrollment.course?.instructor?.full_name || 'TBA'}
                         </p>
                       </div>
                       <Badge variant="secondary">
