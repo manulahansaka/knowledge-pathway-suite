@@ -27,15 +27,21 @@ const Dashboard = ({ user }: DashboardProps) => {
   };
 
   const renderDashboard = () => {
+    // Create user object with name property for compatibility
+    const userWithName = {
+      name: user.full_name,
+      email: user.email
+    };
+
     switch (user.role) {
       case 'student':
         return <StudentDashboard user={user} />;
       case 'teacher':
-        return <TeacherDashboard user={user} />;
+        return <TeacherDashboard user={userWithName} />;
       case 'admin':
-        return <AdminDashboard user={user} />;
+        return <AdminDashboard user={userWithName} />;
       case 'academic_staff':
-        return <AcademicStaffDashboard user={user} />;
+        return <AcademicStaffDashboard user={userWithName} />;
       default:
         return <StudentDashboard user={user} />;
     }
